@@ -34,6 +34,16 @@ The project was developed using:
 
 ---
 
+## System Architecture Diagram
+
+The overall system architecture is shown below:
+
+![Architecture](architecture/architecture.png)
+
+The project follows a modular ROS 2 design.
+
+---
+
 # Features
 
 * Context-aware room selection
@@ -114,6 +124,44 @@ bedroom
 
 ---
 
+## Screenshots
+
+### Simulation Environment
+
+Custom household environment used for navigation testing.
+
+![House World](screenshots/house_world.png)
+
+### Mapping Phase
+
+Environment mapping using SLAM prior to navigation.
+
+![Mapping Phase](screenshots/mapping_phase.png)
+
+### Navigation Phase
+
+Localization and autonomous navigation using Nav2.
+
+![Navigation Phase](screenshots/navigation_phase.png)
+
+---
+
+## Demo Video
+
+A complete demonstration of the system is available below:
+
+https://youtu.be/jtwSiCI8KZY
+
+The demonstration includes:
+
+* User task input
+* Room prediction
+* Goal generation
+* Autonomous navigation
+* Goal completion
+
+---
+
 # Machine Learning Component
 
 Input Features:
@@ -149,21 +197,21 @@ The decision tree was selected because:
 
 # Why a Custom Navigation Launch File Was Developed
 
-During development, the standard TurtleBot3 navigation launch workflow did not provide the level of control required for this project.
+During development, the default TurtleBot3 launch workflow was not sufficient for the requirements of this project.
 
-Several practical challenges were encountered:
+The project required tighter control over:
 
-* Need to load a custom household world
-* Need to load a custom occupancy map
-* Requirement for project-specific RViz configurations
-* Need for reliable robot spawning in the environment
-* Desire to simplify repeated Nav2 testing
-* Need for easier debugging of startup dependencies
-* Support for headless Gazebo workflows
+* Custom world loading
+* Custom occupancy map loading
+* Robot spawning
+* RViz configuration loading
+* Navigation stack startup
+* Repeated testing workflows
+* Headless Gazebo operation
 
-Rather than manually launching each component, a custom launch file was created to coordinate the entire navigation stack.
+The goal was not to replace the TurtleBot3 launch files, but to create a workflow tailored specifically for this project.
 
-The custom launch file initializes:
+The resulting launch file provides a single entry point for launching:
 
 ```text
 Gazebo Server
@@ -179,9 +227,13 @@ Nav2
 RViz
 ```
 
-from a single command.
+This significantly reduced manual startup effort and simplified debugging.
 
-This significantly reduced setup complexity and improved reproducibility during development.
+A detailed explanation is available in:
+
+```text
+launch/README.md
+```
 
 ---
 
@@ -490,6 +542,106 @@ Navigation:
 Goal Accepted
 Navigation Succeeded
 ```
+
+---
+
+## Repository Structure
+
+```text
+household-service-robot-nav2
+│
+├── README.md
+├── train_model.py
+│
+├── architecture/
+│   └── architecture.png
+│
+├── dataset/
+│   └── project_dataset.xlsx
+│
+├── screenshots/
+│   ├── house_world.png
+│   ├── mapping_phase.png
+│   └── navigation_phase.png
+│
+└── my_tb3_bringup/
+    ├── launch/
+    ├── maps/
+    ├── worlds/
+    ├── rviz/
+    ├── my_tb3_bringup/
+    │   ├── input_node.py
+    │   ├── decision_node.py
+    │   ├── predict_room.py
+    │   └── room_navigator.py
+    │
+    ├── package.xml
+    └── setup.py
+```
+
+---
+
+## Lessons Learned
+
+This project reinforced several practical robotics engineering lessons.
+
+### System Integration Often Dominates Development Time
+
+The machine learning component required relatively little effort compared to simulation, localization, navigation, launch architecture, and ROS communication.
+
+### Launch Architecture Matters
+
+Understanding how Gazebo, robot spawning, localization, Nav2, maps, and RViz interact was critical for building a reliable workflow.
+
+### Headless Simulation Can Improve Productivity
+
+Using `gzserver` without the graphical client significantly simplified debugging and reduced resource usage during development.
+
+### Nav2 Is a Complete Navigation Ecosystem
+
+Effective use of Nav2 requires understanding localization, planners, controllers, actions, maps, costmaps, and startup dependencies.
+
+### Debugging Is a Core Robotics Skill
+
+Most development effort was spent diagnosing and resolving integration issues rather than implementing algorithms.
+
+### Modular ROS Architecture Simplifies Expansion
+
+Separating the project into Input, Decision, and Navigator nodes made the system easier to debug, test, and extend.
+
+---
+
+## Known Limitations
+
+The current implementation serves as a proof-of-concept system and has several limitations.
+
+### Static Room Goals
+
+Room coordinates are manually configured and predefined.
+
+### Simulation Only
+
+The system has only been validated in simulation.
+
+### Text-Based Input
+
+Task context is entered manually through the terminal.
+
+### Limited Dataset
+
+The machine learning model was trained on a small demonstration dataset intended for architectural validation.
+
+### No Dynamic Task Scheduling
+
+The robot processes one task request at a time.
+
+### No Perception Pipeline
+
+The robot does not currently use computer vision, object detection, or semantic scene understanding.
+
+### Limited Dynamic Obstacle Evaluation
+
+Although Nav2 supports obstacle avoidance, extensive testing with moving obstacles has not yet been performed.
 
 ---
 
